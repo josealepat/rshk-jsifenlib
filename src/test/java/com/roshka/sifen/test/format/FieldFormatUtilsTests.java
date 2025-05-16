@@ -1,11 +1,11 @@
 package com.roshka.sifen.test.format;
 
 import com.roshka.sifen.core.fields.util.FieldFormatUtil;
-import org.junit.Assert;
+// import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
+// import java.text.NumberFormat;
 import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;

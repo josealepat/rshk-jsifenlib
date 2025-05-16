@@ -45,7 +45,7 @@ public class DETest extends DETestBase {
         // Grupo C
         TgTimb gTimb = new TgTimb();
         gTimb.setiTiDE(TTiDE.FACTURA_ELECTRONICA);
-        gTimb.setdNumTim(12557662);
+        gTimb.setdNumTim("12557662");
         gTimb.setdEst("001");
         gTimb.setdPunExp("002");
         gTimb.setdNumDoc("0000007");
@@ -165,21 +165,25 @@ public class DETest extends DETestBase {
         LocalDateTime currentDate = LocalDateTime.now();
 
         // Evento de Cancelación
-        /*TrGeVeCan trGeVeCan = new TrGeVeCan();
-        trGeVeCan.setId("01800805534001002000000722021040613265708133");
-        trGeVeCan.setmOtEve("Prueba de cancelación de documento electrónico");
-
-        TgGroupTiEvt tgGroupTiEvt = new TgGroupTiEvt();
-        tgGroupTiEvt.setrGeVeCan(trGeVeCan);*/
+        /*
+         * TrGeVeCan trGeVeCan = new TrGeVeCan();
+         * trGeVeCan.setId("01800805534001002000000722021040613265708133");
+         * trGeVeCan.setmOtEve("Prueba de cancelación de documento electrónico");
+         * 
+         * TgGroupTiEvt tgGroupTiEvt = new TgGroupTiEvt();
+         * tgGroupTiEvt.setrGeVeCan(trGeVeCan);
+         */
 
         // Evento de Conformidad
-        /*TrGeVeConf trGeVeConf = new TrGeVeConf();
-        trGeVeConf.setId("01800805534001002000000722021040613265708133");
-        trGeVeConf.setiTipConf(TiTipConf.CONFORMIDAD_PARCIAL);
-        trGeVeConf.setdFecRecep(currentDate);
-
-        TgGroupTiEvt tgGroupTiEvt = new TgGroupTiEvt();
-        tgGroupTiEvt.setrGeVeConf(trGeVeConf);*/
+        /*
+         * TrGeVeConf trGeVeConf = new TrGeVeConf();
+         * trGeVeConf.setId("01800805534001002000000722021040613265708133");
+         * trGeVeConf.setiTipConf(TiTipConf.CONFORMIDAD_PARCIAL);
+         * trGeVeConf.setdFecRecep(currentDate);
+         * 
+         * TgGroupTiEvt tgGroupTiEvt = new TgGroupTiEvt();
+         * tgGroupTiEvt.setrGeVeConf(trGeVeConf);
+         */
 
         // Evento de Disconformidad
         TrGeVeDisconf trGeVeDisconf = new TrGeVeDisconf();
@@ -204,7 +208,8 @@ public class DETest extends DETestBase {
     @Test
     @Ignore
     public void testConversionXml() throws SifenException, IOException {
-        String xml = new String(Files.readAllBytes(Paths.get("C:\\Users\\mzarz\\Desktop\\de.xml")), StandardCharsets.UTF_8);
+        String xml = new String(Files.readAllBytes(Paths.get("C:\\Users\\mzarz\\Desktop\\de.xml")),
+                StandardCharsets.UTF_8);
         DocumentoElectronico DE = new DocumentoElectronico(xml);
         logger.info(DE.toString());
     }
@@ -225,7 +230,7 @@ public class DETest extends DETestBase {
         // Grupo C
         TgTimb gTimb = new TgTimb();
         gTimb.setiTiDE(TTiDE.FACTURA_ELECTRONICA);
-        gTimb.setdNumTim(12557662);
+        gTimb.setdNumTim("12557662");
         gTimb.setdEst("001");
         gTimb.setdPunExp("002");
         gTimb.setdNumDoc("0000008");
@@ -296,7 +301,6 @@ public class DETest extends DETestBase {
         gCamCond.setgPagCred(gPagCred);
         gDtipDE.setgCamCond(gCamCond);
 
-
         gDtipDE.setgCamItemList(new ArrayList<>());
         de.setgDtipDE(gDtipDE);
 
@@ -313,8 +317,7 @@ public class DETest extends DETestBase {
             BigDecimal cantidad,
             BigDecimal precioUnitario,
             TcUniMed uniMed,
-            BigDecimal pctDescuento
-    ) {
+            BigDecimal pctDescuento) {
         TgCamItem gCamItem = new TgCamItem();
 
         gCamItem.setdCodInt(codigo);
@@ -351,8 +354,7 @@ public class DETest extends DETestBase {
                 BigDecimal.valueOf(1),
                 BigDecimal.valueOf(120000),
                 TcUniMed.UNI,
-                BigDecimal.valueOf(0)
-        );
+                BigDecimal.valueOf(0));
 
         TgCamItem tgCamItem01 = createTgCamItem(
                 "002",
@@ -360,8 +362,7 @@ public class DETest extends DETestBase {
                 BigDecimal.valueOf(1),
                 BigDecimal.valueOf(88000),
                 TcUniMed.UNI,
-                BigDecimal.valueOf(1.3)
-        );
+                BigDecimal.valueOf(1.3));
 
         TgDtipDE tgDtipDE = de.getgDtipDE();
         tgDtipDE.getgCamItemList().add(tgCamItem00);

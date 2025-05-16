@@ -10,9 +10,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sun.security.x509.GeneralName;
-import sun.security.x509.X500Name;
-import sun.security.x509.X509CertImpl;
 
 import javax.xml.crypto.*;
 import javax.xml.crypto.dsig.*;
@@ -35,6 +32,7 @@ import java.nio.file.Files;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -52,24 +50,26 @@ public class SignatureHelper {
         transforms = new ArrayList<>();
         try {
             transforms.add(_xmlSignatureFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));
-            transforms.add(_xmlSignatureFactory.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null));
+            transforms.add(
+                    _xmlSignatureFactory.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null));
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             System.err.println("No se puede inicializar contexto para las firmas: " + e.getMessage());
             e.printStackTrace(System.err);
         }
     }
 
-    public static SignedInfo signDocument(SifenConfig sifenConfig, SOAPElement signatureParentNode, String signedNodeId) throws SifenException {
+    public static SignedInfo signDocument(SifenConfig sifenConfig, SOAPElement signatureParentNode, String signedNodeId)
+            throws SifenException {
         try {
             Reference ref = _xmlSignatureFactory.newReference("#" + signedNodeId,
                     _xmlSignatureFactory.newDigestMethod(DigestMethod.SHA256, null),
                     transforms, null, null);
 
             SignedInfo signedInfo = _xmlSignatureFactory.newSignedInfo(
-                    _xmlSignatureFactory.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE, (C14NMethodParameterSpec) null),
+                    _xmlSignatureFactory.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE,
+                            (C14NMethodParameterSpec) null),
                     _xmlSignatureFactory.newSignatureMethod(Constants.RSA_SHA256, null),
-                    Collections.singletonList(ref)
-            );
+                    Collections.singletonList(ref));
 
             KeyStore keyStore = SSLContextHelper.getCertificateKeyStore(sifenConfig);
             String alias = keyStore.aliases().nextElement();
@@ -80,15 +80,17 @@ public class SignatureHelper {
             KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data));
 
             XMLSignature signature = _xmlSignatureFactory.newXMLSignature(signedInfo, keyInfo);
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, sifenConfig.getContrasenaCertificadoCliente().toCharArray());
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias,
+                    sifenConfig.getContrasenaCertificadoCliente().toCharArray());
 
             DOMSignContext signatureContext = new DOMSignContext(privateKey, signatureParentNode);
             signature.sign(signatureContext);
 
             return signedInfo;
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | XMLSignatureException |
-                 MarshalException | KeyStoreException | UnrecoverableKeyException e) {
-            throw SifenExceptionUtil.requestSigningError("Ocurrió un error al firmar la petición SOAP utilizando el certificado activo", e);
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | XMLSignatureException
+                | MarshalException | KeyStoreException | UnrecoverableKeyException e) {
+            throw SifenExceptionUtil.requestSigningError(
+                    "Ocurrió un error al firmar la petición SOAP utilizando el certificado activo", e);
         }
     }
 
@@ -100,8 +102,7 @@ public class SignatureHelper {
                 xmlFile = File.createTempFile(String.valueOf(UUID.randomUUID()), ".xml");
 
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                        Files.newOutputStream(xmlFile.toPath()), StandardCharsets.UTF_8
-                ));
+                        Files.newOutputStream(xmlFile.toPath()), StandardCharsets.UTF_8));
                 writer.write(xml);
                 writer.close();
             } catch (IOException e) {
@@ -149,7 +150,8 @@ public class SignatureHelper {
             XMLSignature signature = _xmlSignatureFactory.unmarshalXMLSignature(valContext);
 
             // Get subjects from certificate for further validation
-            List<ValidezFirmaDigital.SujetoCertificado> certificateSubjects = getCertificateSubjects(signature.getKeyInfo());
+            List<ValidezFirmaDigital.SujetoCertificado> certificateSubjects = getCertificateSubjects(
+                    signature.getKeyInfo());
 
             // Validate the Signature
             boolean isValid = signature.validate(valContext);
@@ -166,7 +168,8 @@ public class SignatureHelper {
         }
     }
 
-    private static ValidezFirmaDigital checkDocumentIssuer(Document document, List<ValidezFirmaDigital.SujetoCertificado> certificateSubjects) {
+    private static ValidezFirmaDigital checkDocumentIssuer(Document document,
+            List<ValidezFirmaDigital.SujetoCertificado> certificateSubjects) {
         // Get Issuer RUC from Electronic Document
         NodeList dRucEmNodes = document.getElementsByTagName("dRucEm");
         if (dRucEmNodes.getLength() == 0) {
@@ -196,33 +199,33 @@ public class SignatureHelper {
     private static List<ValidezFirmaDigital.SujetoCertificado> getCertificateSubjects(KeyInfo keyInfo) {
         List<ValidezFirmaDigital.SujetoCertificado> certificateSubjects = new ArrayList<>();
 
-        // Get certificate from Electronic Document
-        X509CertImpl certificate = (X509CertImpl) X509KeySelector.getCertificate(keyInfo);
-        if (certificate == null) return certificateSubjects;
+        // Obtener el certificado del documento electrónico
+        X509Certificate certificate = X509KeySelector.getCertificate(keyInfo);
+        if (certificate == null)
+            return certificateSubjects;
 
-        // Get main subject information from certificate
+        // Obtener información principal del sujeto del certificado
         try {
             String subject = certificate.getSubjectDN().getName();
-
             certificateSubjects.add(ValidezFirmaDigital.SujetoCertificado.create(
                     getAttributeFromSubject(subject, "SERIALNUMBER"),
-                    SifenUtil.coalesce(getAttributeFromSubject(subject, "CN"), getAttributeFromSubject(subject, "O"))
-            ));
+                    SifenUtil.coalesce(getAttributeFromSubject(subject, "CN"), getAttributeFromSubject(subject, "O"))));
         } catch (Exception ignored) {
         }
 
-        // Get alternatives subjects from certificate
+        // Obtener nombres alternativos del certificado
         try {
-            List<GeneralName> names = certificate.getSubjectAlternativeNameExtension().get("subject_name").names();
-            for (GeneralName name : names) {
-                if (!(name.getName() instanceof X500Name)) continue;
-
-                String subject = name.getName().toString();
-
-                certificateSubjects.add(ValidezFirmaDigital.SujetoCertificado.create(
-                        getAttributeFromSubject(subject, "SERIALNUMBER"),
-                        SifenUtil.coalesce(getAttributeFromSubject(subject, "CN"), getAttributeFromSubject(subject, "O"))
-                ));
+            Collection<List<?>> altNames = certificate.getSubjectAlternativeNames();
+            if (altNames != null) {
+                for (List<?> altNameEntry : altNames) {
+                    // El nombre alternativo tipo 4 es un DN (Distinguished Name)
+                    if (altNameEntry.size() >= 2 && altNameEntry.get(0) instanceof Integer && (Integer) altNameEntry.get(0) == 4) {
+                        String subject = altNameEntry.get(1).toString();
+                        certificateSubjects.add(ValidezFirmaDigital.SujetoCertificado.create(
+                                getAttributeFromSubject(subject, "SERIALNUMBER"),
+                                SifenUtil.coalesce(getAttributeFromSubject(subject, "CN"), getAttributeFromSubject(subject, "O"))));
+                    }
+                }
             }
         } catch (Exception ignored) {
         }
@@ -241,11 +244,12 @@ public class SignatureHelper {
 
     private static class X509KeySelector extends KeySelector {
         public KeySelectorResult select(KeyInfo keyInfo, Purpose purpose, AlgorithmMethod method,
-                                        XMLCryptoContext context) throws KeySelectorException {
+                XMLCryptoContext context) throws KeySelectorException {
             X509Certificate certificate = getCertificate(keyInfo);
             if (certificate != null) {
                 final PublicKey key = certificate.getPublicKey();
-                if (key.getAlgorithm().equalsIgnoreCase("RSA") && method.getAlgorithm().equalsIgnoreCase(Constants.RSA_SHA256)) {
+                if (key.getAlgorithm().equalsIgnoreCase("RSA")
+                        && method.getAlgorithm().equalsIgnoreCase(Constants.RSA_SHA256)) {
                     return () -> key;
                 }
             }
@@ -255,11 +259,13 @@ public class SignatureHelper {
         public static X509Certificate getCertificate(KeyInfo keyInfo) {
             for (Object value : keyInfo.getContent()) {
                 XMLStructure info = (XMLStructure) value;
-                if (!(info instanceof X509Data)) continue;
+                if (!(info instanceof X509Data))
+                    continue;
 
                 X509Data x509Data = (X509Data) info;
                 for (Object certificate : x509Data.getContent()) {
-                    if (!(certificate instanceof X509Certificate)) continue;
+                    if (!(certificate instanceof X509Certificate))
+                        continue;
 
                     return ((X509Certificate) certificate);
                 }

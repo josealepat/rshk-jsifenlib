@@ -47,9 +47,12 @@ public class TgDatRec extends SifenObjectBase {
             gDatRec.addChildElement("dDVRec").setTextContent(String.valueOf(this.dDVRec));
         }
 
-        if (this.iNatRec.getVal() == 2 && this.iTiOpe.getVal() != 4) {
+        if (this.iNatRec.getVal() == 2
+        // && this.iTiOpe.getVal() != 4
+        ) {
             gDatRec.addChildElement("iTipIDRec").setTextContent(String.valueOf(this.iTipIDRec.getVal()));
-            gDatRec.addChildElement("dDTipIDRec").setTextContent(SifenUtil.coalesce(this.iTipIDRec.getDescripcion(), this.dDTipIDRec));
+            gDatRec.addChildElement("dDTipIDRec")
+                    .setTextContent(SifenUtil.coalesce(this.iTipIDRec.getDescripcion(), this.dDTipIDRec));
             gDatRec.addChildElement("dNumIDRec").setTextContent(SifenUtil.coalesce(this.dNumIDRec, "0"));
         }
 
@@ -57,7 +60,8 @@ public class TgDatRec extends SifenObjectBase {
         if (this.dNomFanRec != null)
             gDatRec.addChildElement("dNomFanRec").setTextContent(this.dNomFanRec);
 
-        if (this.dDirRec != null || iTiDE.getVal() == 7 || this.iTiOpe.getVal() == 4) {
+        if (this.dDirRec != null || iTiDE.getVal() == 7
+                || this.iTiOpe.getVal() == 4) {
             gDatRec.addChildElement("dDirRec").setTextContent(this.dDirRec);
             gDatRec.addChildElement("dNumCasRec").setTextContent(String.valueOf(this.dNumCasRec));
 

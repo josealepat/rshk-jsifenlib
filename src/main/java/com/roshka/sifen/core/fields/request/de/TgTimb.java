@@ -12,13 +12,13 @@ import javax.xml.soap.SOAPException;
 import java.time.LocalDate;
 
 public class TgTimb extends SifenObjectBase {
-    private TTiDE iTiDE;        // este campo engloba a iTiDE y a dDesTiDE
-    private int dNumTim;        // número de timbrado
-    private String dEst;        // código de establecimiento: patron ej: 001
-    private String dPunExp;     // punto de expedición: patron ej: 001
-    private String dNumDoc;     // número de documento: patron ej: 0192312
-    private String dSerieNum;   // número de serie del timbrado (opcional)
-    private LocalDate dFeIniT;  // fecha de inicio de vigencia del timbrado
+    private TTiDE iTiDE; // este campo engloba a iTiDE y a dDesTiDE
+    private String dNumTim; // número de timbrado
+    private String dEst; // código de establecimiento: patron ej: 001
+    private String dPunExp; // punto de expedición: patron ej: 001
+    private String dNumDoc; // número de documento: patron ej: 0192312
+    private String dSerieNum; // número de serie del timbrado (opcional)
+    private LocalDate dFeIniT; // fecha de inicio de vigencia del timbrado
 
     public void setupSOAPElements(SOAPElement DE) throws SOAPException {
         SOAPElement gTimb = DE.addChildElement("gTimb");
@@ -40,7 +40,7 @@ public class TgTimb extends SifenObjectBase {
                 this.iTiDE = TTiDE.getByVal(Short.parseShort(ResponseUtil.getTextValue(value)));
                 break;
             case "dNumTim":
-                this.dNumTim = Integer.parseInt(ResponseUtil.getTextValue(value));
+                this.dNumTim = ResponseUtil.getTextValue(value);
                 break;
             case "dEst":
                 this.dEst = ResponseUtil.getTextValue(value);
@@ -68,11 +68,11 @@ public class TgTimb extends SifenObjectBase {
         this.iTiDE = iTiDE;
     }
 
-    public int getdNumTim() {
+    public String getdNumTim() {
         return dNumTim;
     }
 
-    public void setdNumTim(int dNumTim) {
+    public void setdNumTim(String dNumTim) {
         this.dNumTim = dNumTim;
     }
 
